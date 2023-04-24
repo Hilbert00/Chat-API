@@ -12,4 +12,13 @@ router.get("/sobre", (req, res) => {
     });
 });
 
+router.get("/salas", (req, res) => {
+    const salaController = require("./controller/salaController.js");
+    
+    salaController.get()
+        .then((result) => {
+            res.status(200).send(result);
+        });
+})
+
 module.exports = router;
