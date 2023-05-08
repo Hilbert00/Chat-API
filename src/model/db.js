@@ -1,4 +1,4 @@
-const { MongoClient, ObjectId } = require("mongodb");
+const { MongoClient } = require("mongodb");
 
 let singleton;
 
@@ -18,10 +18,22 @@ async function findAll(collection) {
     return db.collection(collection).find().toArray();
 }
 
+async function findOne(collection, filter) {
+    const db = await connect();
+
+    return db.collection(collection).findOne(filter);
+}
+
 async function insertOne(collection, object) {
     const db = await connect();
 
     return db.collection(collection).insertOne(object);
 }
 
-module.exports = { findAll, insertOne };
+async function updateOne(collection, filter, data) {
+    const db = await connect();
+
+    return db.collection(collection).updateOne(filter, data);
+}
+
+module.exports = { findAll, findOne, insertOne, updateOne };
