@@ -1,6 +1,6 @@
 const mensagemModel = require("../model/mensagemModel.js");
 
-exports.get = (user, idSala, timestamp) => {
+exports.get = (idSala, timestamp) => {
     return mensagemModel.listarMensagens(idSala, timestamp);
 };
 
