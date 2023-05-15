@@ -12,22 +12,24 @@ router.get("/sobre", (req, res) => {
     });
 });
 
-router.get("/salas", (req, res) => {
+router.get("/salas", async (req, res) => {
     const salaController = require("./controller/salaController.js");
 
-    salaController.get().then((result) => {
-        res.status(200).send(result);
-    });
-});
-
-router.get("/salas/entrar", async (req, res) => {
-    const salaController = require("./controller/salaController.js");
-    const idSala = { idSala: req.query.idSala };
-    const { token } = req.headers;
-    const { idUser } = req.headers;
-    const resp = await salaController.enter(idSala, token, idUser);
+    const resp = await salaController.get();
 
     res.status(200).send(resp);
+});
+
+router.get("/mensagens", async (req, res) => {
+    const mensagemController = require("./controller/mensagemController.js");
+
+    const { timestamp } = req.query;
+    const idSala = req.headers["id-sala"];
+    const user = { token: req.headers.token, idUser: req.headers["id-user"] };
+
+    const resp = await mensagemController.get(user, idSala, timestamp);
+
+    res.status(200).send({ timestamp, resp });
 });
 
 router.post("/entrar", async (req, res) => {
@@ -39,11 +41,57 @@ router.post("/entrar", async (req, res) => {
 
 router.post("/salas/criar", async (req, res) => {
     const salaController = require("./controller/salaController.js");
-    const { token } = req.headers;
-    const { idUser } = req.headers;
-    const sala = {...req.body, users: [{ token, idUser }], msgs: []};
+    const userController = require("./controller/usuarioController.js");
+
+    const sala = { ...req.body, msgs: [] };
+    const user = { token: req.headers.token, idUser: req.headers["id-user"] };
 
     const resp = await salaController.create(sala);
+    await userController.enter(user, JSON.stringify(resp.insertedId).replace(/"/g, ""));
+
+    res.status(200).send(resp);
+});
+
+router.post("/mensagens/enviar", async (req, res) => {
+    const mensagemController = require("./controller/mensagemController.js");
+
+    const { msg } = req.body;
+    const idSala = req.headers["id-sala"];
+    const user = { token: req.headers.token, idUser: req.headers["id-user"] };
+
+    const resp = await mensagemController.send(user, idSala, msg);
+
+    res.status(200).send(resp);
+});
+
+router.put("/salas/entrar", async (req, res) => {
+    const userController = require("./controller/usuarioController.js");
+
+    const { idSala } = req.query;
+    const user = { token: req.headers.token, idUser: req.headers["id-user"] };
+
+    const resp = await userController.enter(user, idSala);
+
+    res.status(200).send(resp);
+});
+
+router.put("/salas/sair", async (req, res) => {
+    const userController = require("./controller/usuarioController.js");
+
+    const user = { token: req.headers.token, idUser: req.headers["id-user"] };
+
+    const resp = await userController.exit(user);
+
+    res.status(200).send(resp);
+});
+
+router.delete("/sair", async (req, res) => {
+    const usuarioController = require("./controller/usuarioController.js");
+
+    const user = { token: req.headers.token, idUser: req.headers["id-user"] };
+
+    const resp = await usuarioController.logoff(user);
+
     res.status(200).send(resp);
 });
 

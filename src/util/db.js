@@ -12,10 +12,12 @@ async function connect() {
     return singleton;
 }
 
-async function findAll(collection) {
+async function findAll(collection, filter) {
     const db = await connect();
 
-    return db.collection(collection).find().toArray();
+    if (!filter) filter = {};
+
+    return db.collection(collection).find(filter).toArray();
 }
 
 async function findOne(collection, filter) {
@@ -36,4 +38,10 @@ async function updateOne(collection, filter, data) {
     return db.collection(collection).updateOne(filter, data);
 }
 
-module.exports = { findAll, findOne, insertOne, updateOne };
+async function deleteOne(collection, filter) {
+    const db = await connect();
+
+    return db.collection(collection).deleteOne(filter);
+}
+
+module.exports = { findAll, findOne, insertOne, updateOne, deleteOne };

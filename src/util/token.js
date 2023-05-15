@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
-const checkToken = async (token, id, key) => {
-    jwt.verify(token, key, {}, (err, decoded) => {});
+const checkToken = async (token, key) => {
+    return jwt.verify(token, key);
 };
 
 const setToken = async (id, key) => {
