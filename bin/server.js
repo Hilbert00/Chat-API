@@ -3,13 +3,12 @@ require("dotenv").config();
 const express = require("express");
 const router = require("../src/api.js");
 const app = express();
+const cors = require("cors");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use((req, res, next) => {
-    next();
-})
+app.use(cors({ origin: "*" }));
 
 app.use("/", router);
 

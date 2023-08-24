@@ -1,33 +1,42 @@
 const db = require("../util/db.js");
 const { ObjectId } = require("mongodb");
 
-async function listarMensagens(idSala, timestamp) {
-    idSala = new ObjectId(idSala);
+async function listarMensagens(user, timestamp) {
     timestamp = new Date(timestamp);
 
-    const sala = await db.findOne("salas", { _id: idSala });
+    return db.findOne("usuarios", { _id: user.idUser }).then(async (res) => {
+        if (res === null || !res.room) return [];
 
-    const msgs = sala.msgs.filter((e) => {
-        const date = new Date(e.timestamp);
+        const idSala = new ObjectId(res.room);
+        const sala = await db.findOne("salas", { _id: idSala });
 
-        if (+date >= +timestamp) return true;
+        const msgs = sala.msgs.filter((e) => {
+            const date = new Date(e.timestamp);
 
-        return false;
+            if (+date >= +timestamp) return true;
+
+            return false;
+        });
+
+        return msgs;
     });
-
-    return msgs;
 }
 
-function enviarMensagem(user, idSala, msg) {
-    idSala = new ObjectId(idSala);
+async function enviarMensagem(user, msg) {
+    return db.findOne("usuarios", { _id: user.idUser }).then(async (res) => {
+        if (res === null) return null;
 
-    const msgBody = {
-        idUser: user.idUser,
-        msg: msg,
-        timestamp: new Date().toISOString(),
-    };
+        const idSala = new ObjectId(res.room);
+        const msgBody = {
+            idUser: user.idUser,
+            username: res.username,
+            color: res.color,
+            content: msg,
+            timestamp: +new Date(),
+        };
 
-    return db.updateOne("salas", { _id: idSala }, { $push: { msgs: msgBody } });
+        return await db.updateOne("salas", { _id: idSala }, { $push: { msgs: msgBody } });
+    });
 }
 
 module.exports = { listarMensagens, enviarMensagem };

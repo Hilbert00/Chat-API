@@ -8,11 +8,11 @@ const mensagemController = require("./controller/mensagemController.js");
 const salaController = require("./controller/salaController.js");
 const usuarioController = require("./controller/usuarioController.js");
 
-router.get("/", (req, res) => {
+router.get("/", (_req, res) => {
     return res.status(200).send("<h1>API - Chat</h1>");
 });
 
-router.get("/sobre", (req, res) => {
+router.get("/sobre", (_req, res) => {
     return res.status(200).send({
         name: "API - Chat",
         version: "0.1.0",
@@ -20,17 +20,17 @@ router.get("/sobre", (req, res) => {
     });
 });
 
-router.get("/salas", async (req, res) => {
+router.get("/salas", async (_req, res) => {
     const resp = await salaController.get();
 
     return res.status(200).send({ resp });
 });
 
-router.get("/mensagens", async (req, res) => {
+router.get("/mensagens", verifyUser, async (req, res) => {
+    const { user } = req;
     const { timestamp } = req.query;
-    const idSala = req.headers["id-sala"];
 
-    const resp = await mensagemController.get(idSala, timestamp);
+    const resp = await mensagemController.get(user, timestamp);
 
     return res.status(200).send({ timestamp, resp });
 });
@@ -43,7 +43,7 @@ router.post("/entrar", async (req, res) => {
 
 router.post("/salas/criar", verifyUser, async (req, res) => {
     const { user } = req;
-    const sala = { ...req.body, msgs: [] };
+    const sala = { name: req.body.name, tags: req.body.tags, password: req.body.password, msgs: [] };
 
     const resp = await salaController.create(sala);
     await usuarioController.enter(user, JSON.stringify(resp.insertedId).replace(/"/g, ""));
@@ -54,11 +54,8 @@ router.post("/salas/criar", verifyUser, async (req, res) => {
 router.post("/mensagens/enviar", verifyUser, async (req, res) => {
     const { user } = req;
     const { msg } = req.body;
-    const idSala = req.headers["id-sala"];
 
-    await mensagemController.send(user, idSala, msg);
-
-    return res.sendStatus(200);
+    return (await mensagemController.send(user, msg)) === null ? res.sendStatus(401) : res.sendStatus(200);
 });
 
 router.put("/salas/entrar", verifyUser, async (req, res) => {
@@ -72,8 +69,9 @@ router.put("/salas/entrar", verifyUser, async (req, res) => {
 
 router.put("/salas/sair", verifyUser, async (req, res) => {
     const { user } = req;
+    const idSala = req.headers.idsala;
 
-    const resp = await usuarioController.exit(user);
+    await usuarioController.exit(user, idSala);
 
     return res.sendStatus(200);
 });

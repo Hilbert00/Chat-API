@@ -1,9 +1,9 @@
 const mensagemModel = require("../model/mensagemModel.js");
 
-exports.get = (idSala, timestamp) => {
-    return mensagemModel.listarMensagens(idSala, timestamp);
+exports.get = (user, timestamp) => {
+    return mensagemModel.listarMensagens(user, timestamp);
 };
 
-exports.send = (user, idSala, msg) => {
-    return mensagemModel.enviarMensagem(user, idSala, msg);
+exports.send = (user, msg) => {
+    return mensagemModel.enviarMensagem(user, msg);
 };

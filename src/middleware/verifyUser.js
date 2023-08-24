@@ -1,6 +1,7 @@
 const jwt = require("../util/token.js");
+const { ObjectId } = require("mongodb");
 
-function verifyUser (req, res, next) {
+function verifyUser(req, res, next) {
     const { token } = req.headers;
     const { username } = req.headers;
 
@@ -9,9 +10,9 @@ function verifyUser (req, res, next) {
     jwt.checkToken(token, username)
         .then((res) => {
             req.user = {
-                idUser: res.id,
-                username: username
-            }
+                idUser: new ObjectId(res.id),
+                username: username,
+            };
 
             next();
         })

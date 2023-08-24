@@ -9,6 +9,7 @@ exports.login = async (username) => {
             idUser: resp.insertedId,
             token: await jwt.setToken(JSON.stringify(resp.insertedId).replace(/"/g, ""), username),
             username: username,
+            color: resp.color,
             room: "",
         };
     }
@@ -24,6 +25,6 @@ exports.enter = (user, idSala) => {
     return userModel.entrarSala(user, idSala);
 };
 
-exports.exit = (user) => {
-    return userModel.sairSala(user);
+exports.exit = (user, idSala) => {
+    return userModel.sairSala(user, idSala);
 };
